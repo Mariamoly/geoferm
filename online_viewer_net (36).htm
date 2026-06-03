@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoFarm App — Investor Demo</title>
+    <style>
+        :root {
+            --bg-color: #FAF8F5; /* ნატურალური, თბილი, პრემიუმ ტონი */
+            --text-color: #111111;
+            --accent-green: #1E4620; /* მდიდარი აგრო-მწვანე */
+            --accent-gold: #D4A373; /* თბილი ოქროსფერი/თაფლისფერი */
+            --card-bg: #FFFFFF;
+            --border-color: #EAE6DF;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* აპლიკაციის კონტეინერი (სმარტფონის იმიტაცია პრეზენტაციისთვის) */
+        .phone-container {
+            width: 390px;
+            height: 844px;
+            background: var(--card-bg);
+            border: 12px solid #111;
+            border-radius: 45px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ტელეფონის "Notch" */
+        .phone-notch {
+            width: 150px;
+            height: 30px;
+            background: #111;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 999;
+        }
+
+        /* აპლიკაციის ჰედერი */
+        .app-header {
+            padding: 40px 20px 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #FFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-green);
+            letter-spacing: -0.5px;
+        }
+
+        .app-tagline {
+            font-size: 11px;
+            background: #F0F4F1;
+            color: var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* ბენტო სტრუქტურა აპლიკაციაში */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 90px;
+        }
+
+        /* ბენტო ბლოკი: რუკა */
+        .bento-map-card {
+            background: #F4F1EA;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            height: 320px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+
+        /* საქართველოს პასტელური რუკა ფონად */
+        .geo-map {
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.postimg.cc/nLyf46MM/Gemini-Generated-Image-m4rg2rm4rg2rm4rg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        /* პინების სტილი და ფეთქებადი (Pulse) ანიმაცია */
+        .map-pin {
+            position: absolute;
+            background: #FFF;
+            border: 1.5px solid var(--accent-green);
+            border-radius: 50px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 8px 16px rgba(0,0,0,0.12); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 20px rgba(30,70,32,0.2); }
+            100% { transform: scale(1); box-shadow: 0 8px 16px rgba(0,0,0,0.12); }
+        }
+
+        .map-pin:hover {
+            background: var(--accent-green);
+            color: #FFF;
+            z-index: 10;
+        }
+
+        /* პინების პოზიციონირება რუკის გეოგრაფიის მიხედვით */
+        .pin-kakheti { top: 62%; right: 18%; }
+        .pin-samegrelo { top: 38%; left: 24%; }
+        .pin-imereti { top: 48%; left: 42%; }
+
+        /* ბენტო ბლოკი: დინამიური ფერმერის პროფილი (Native Soul) */
+        .bento-profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .profile-title h4 { margin: 0; font-size: 15px; font-weight: 700; }
+        .profile-title p { margin: 2px 0 0 0; font-size: 12px; color: #666; }
+
+        /* ბენტო ბლოკი: კატალოგი */
+        .bento-catalog-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 16px;
+        }
+
+        .catalog-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .product-strip {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .product-strip::-webkit-scrollbar { display: none; }
+
+        .mini-product-card {
+            background: #FAF9F6;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px;
+            min-width: 110px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .mini-product-card span { font-size: 28px; }
+        .mini-product-card h5 { margin: 8px 0 4px 0; font-size: 12px; font-weight: 600; }
+        .mini-product-card p { margin: 0; font-size: 11px; color: var(--accent-green); font-weight: 700; }
+
+        /* ბენტო ბლოკი: Corpus Farm ოპტიმიზაცია */
+        .bento-logistics-card {
+            background: var(--accent-green);
+            color: #FFF;
+            border-radius: 24px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logistics-info h4 { margin: 0; font-size: 14px; font-weight: 700; }
+        .logistics-info p { margin: 4px 0 0 0; font-size: 11px; opacity: 0.8; }
+
+        .logistics-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* აპლიკაციის მენიუ (ტაბბარი) */
+        .app-navbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 75px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-sizing: border-bottom;
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .nav-item.active { color: var(--accent-green); }
+        .nav-item span { font-size: 20px; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="phone-notch"></div>
+        
+        <!-- ჰედერი -->
+        <div class="app-header">
+            <div class="app-logo">GeoFarm</div>
+            <div class="app-tagline">Farm-to-Door</div>
+        </div>
+
+        <!-- კონტენტი (ბენტო სტილი) -->
+        <div class="app-content">
+            
+            <!-- ბლოკი 1: რუკა ახალი ფონით და პინებით -->
+            <div class="bento-map-card">
+                <div class="geo-map">
+                    <div class="map-pin pin-kakheti" onclick="showFarmer('ლევან ბერიძე', '🍇 ქვევრის საფერავი', 'კახეთი', '🍷')">
+                        🍇 კახეთი
+                    </div>
+                    <div class="map-pin pin-samegrelo" onclick="showFarmer('ანა კალანდაძე', '🧀 მეგრული სულგუნი', 'სამეგრელო', '👩‍🌾')">
+                        🧀 სამეგრელო
+                    </div>
+                    <div class="map-pin pin-imereti" onclick="showFarmer('გიორგი შავაძე', '🍯 ალპური თაფლი', 'იმერეთი', '👨‍🌾')">
+                        🍯 იმერეთი
+                    </div>
+                </div>
+            </div>
+
+            <!-- ბლოკი 2: დინამიური Native Soul პროფილი (იცვლება კლიკზე) -->
+            <div class="bento-profile-card" id="farmerCard">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="farmerEmoji">👩‍🌾</div>
+                    <div class="profile-title">
+                        <p style="margin:0; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--accent-gold); font-weight:700;">Native Soul გარანტია</p>
+                        <h4 id="farmerName">ნუნუ ბებო</h4>
+                        <p id="farmerProduct">🧀  მეგრული სულგუნი · სამეგრელო</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ბლოკი 3: Corpus Farm ოპტიმიზაცია -->
+            <div class="bento-logistics-card">
+                <div class="logistics-info">
+                    <h4>Corpus Farm მიკრო-ჰაბი</h4>
+                    <p>თქვენს კორპუსში მიწოდება ოპტიმიზებულია</p>
+                </div>
+                <div class="logistics-badge">3 / 5 შეკვეთა</div>
+            </div>
+
+            <!-- ბლოკი 4: სეზონური კატალოგი -->
+            <div class="bento-catalog-card">
+                <div class="catalog-title">სეზონური კატალოგი</div>
+                <div class="product-strip">
+                    <div class="mini-product-card">
+                        <span>🧀</span>
+                        <h5>სულგუნი</h5>
+                        <p>22.00 ₾</p>
+                    </div>
+                    <div class="mini-product-card">
+                        <span>🍯</span>
+                        <h5>თაფლი</h5>
+                        <p>28.00 ₾</p>
+                    </div>
+                    <div class="mini-product-card">
+                        <span>🍇</span>
+                        <h5>საფერავი</h5>
+                        <p>35.00 ₾</p>
+                    </div>
+                    <div class="mini-product-card">
+                        <span>🍅</span>
+                        <h5>პომიდორი</h5>
+                        <p>6.50 ₾</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ნავიგაცია -->
+        <div class="app-navbar">
+            <div class="nav-item active"><span>🗺️</span>რუკა</div>
+            <div class="nav-item"><span>🛍️</span>კატალოგი</div>
+            <div class="nav-item"><span>📦</span>შეკვეთები</div>
+            <div class="nav-item"><span>👤</span>პროფილი</div>
+        </div>
+    </div>
+
+    <!-- ინტერაქტივის სკრიპტი -->
+    <script>
+        function showFarmer(name, product, region, emoji) {
+            document.getElementById('farmerName').innerText = name;
+            document.getElementById('farmerProduct').innerText = product + ' · ' + region;
+            document.getElementById('farmerEmoji').innerText = emoji;
+            
+            // მცირე ვიზუალური ეფექტი ბარათის განახლებისას (Feedback)
+            const card = document.getElementById('farmerCard');
+            card.style.transform = 'scale(1.02)';
+            card.style.borderColor = 'var(--accent-gold)';
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+                card.style.borderColor = 'var(--border-color)';
+            }, 200);
+        }
+    </script>
+
+</body>
+</html>
